@@ -1,7 +1,7 @@
 # CRAM-1
 ## Evidence at the Moment It Matters
 
-AI-assisted clinical literature synthesis for doctors. Takes any clinical question — pre-op planning, study design, literature review, drug comparison — searches 13 curated medical sources in parallel, verifies every finding against raw source text, and produces a structured, evidence-graded report that actually answers what was asked.
+AI-assisted clinical literature synthesis for doctors. Takes any clinical question — pre-op planning, study design, literature review, drug comparison — searches 17 medical sources in parallel, verifies every finding against raw source text, and produces a structured, evidence-graded report that actually answers what was asked.
 
 > ⚠️ For clinical reference only. Does not replace clinical judgment, institutional protocols, or specialist consultation. Every claim must be verified against the cited source documents.
 
@@ -11,8 +11,8 @@ AI-assisted clinical literature synthesis for doctors. Takes any clinical questi
 
 ```bash
 # 1. Clone and install (requires Python 3.11+, uv recommended)
-git clone https://github.com/harjass/medagent.git
-cd medagent
+git clone https://github.com/harjassgambhir/cram.git
+cd cram
 
 # With uv (recommended):
 source .venv/bin/activate
@@ -45,7 +45,7 @@ Question analysis      — detects question type, generates output structure
     ↓
 BFS decomposition      — splits into 6 parallel research branches
     ↓
-DFS search (parallel)  — searches 13 sources per branch, 2 depth levels
+DFS search (parallel)  — searches 17 sources per branch, 2 depth levels
     ↓
 Verification           — every finding checked against raw source text
     ↓
