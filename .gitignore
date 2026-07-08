@@ -1,0 +1,54 @@
+# ── Secrets ──────────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*
+!.env.example
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.venv/
+venv/
+dist/
+build/
+*.so
+
+# ── Runtime data (user-specific, never committed) ─────────────────────────────
+~/.medagent/
+.medagent/
+
+# ── Generated outputs ────────────────────────────────────────────────────────
+report_*.md
+report_*.pdf
+session_*/
+*.research.txt
+full-output-research.txt
+
+# ── Claude Code internal ──────────────────────────────────────────────────────
+.claude/
+
+# ── Internal scratch files ────────────────────────────────────────────────────
+my_opinions.txt
+opus_*.md
+sonnet_*.md
+_private/
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Test coverage ─────────────────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Lock files (keep uv.lock, ignore pip) ────────────────────────────────────
+# uv.lock is intentionally committed for reproducibility

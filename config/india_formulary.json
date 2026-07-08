@@ -1,0 +1,83 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "source": "NLEM 2022 (National List of Essential Medicines), CDSCO approvals, common Indian trade names",
+    "note": "Use to flag unavailable drugs and suggest available alternatives for Indian centres"
+  },
+
+  "anticoagulants": {
+    "rivaroxaban":    { "brands": ["Xarelto", "Rivarab", "Rivaro"], "nlem": false, "tier": "specialty", "available": true, "note": "Available but expensive; not on NLEM" },
+    "apixaban":       { "brands": ["Eliquis"], "nlem": false, "tier": "specialty", "available": true },
+    "dabigatran":     { "brands": ["Pradaxa"], "nlem": false, "tier": "specialty", "available": true },
+    "warfarin":       { "brands": ["Warf", "Coumadin"], "nlem": true, "tier": "essential", "available": true },
+    "heparin":        { "brands": ["Heparin Sodium"], "nlem": true, "tier": "essential", "available": true },
+    "enoxaparin":     { "brands": ["Clexane", "Enoxacare"], "nlem": true, "tier": "essential", "available": true },
+    "fondaparinux":   { "brands": ["Arixtra"], "nlem": false, "tier": "specialty", "available": true }
+  },
+
+  "antibiotics_surgical": {
+    "cefazolin":      { "brands": ["Reflin", "Cefazol"], "nlem": true, "tier": "essential", "available": true, "note": "First-line surgical prophylaxis" },
+    "metronidazole":  { "brands": ["Flagyl", "Metrogyl"], "nlem": true, "tier": "essential", "available": true },
+    "piperacillin_tazobactam": { "brands": ["Tazact", "Zosyn"], "nlem": true, "tier": "essential", "available": true },
+    "meropenem":      { "brands": ["Meropenem", "Meronem"], "nlem": true, "tier": "essential", "available": true },
+    "vancomycin":     { "brands": ["Vancocin", "Vancoled"], "nlem": true, "tier": "essential", "available": true },
+    "fluconazole":    { "brands": ["Forcan", "Flucos"], "nlem": true, "tier": "essential", "available": true, "note": "CYP3A4 inhibitor — interacts with rivaroxaban" },
+    "voriconazole":   { "brands": ["Vfend", "Vorier"], "nlem": false, "tier": "specialty", "available": true, "note": "Strong CYP3A4 inhibitor — significant DOAC interaction" }
+  },
+
+  "antifungals_cyp_note": {
+    "_warning": "Azole antifungals (fluconazole, voriconazole, itraconazole) are strong CYP3A4 inhibitors. Increase rivaroxaban/apixaban levels significantly. Common in hepatobiliary surgery prophylaxis."
+  },
+
+  "analgesics": {
+    "paracetamol":    { "brands": ["Crocin", "Dolo", "Tylenol"], "nlem": true, "tier": "essential", "available": true },
+    "tramadol":       { "brands": ["Ultracet", "Tramazac"], "nlem": true, "tier": "essential", "available": true },
+    "morphine":       { "brands": ["Morphine Sulphate"], "nlem": true, "tier": "essential", "available": true },
+    "fentanyl":       { "brands": ["Fentanyl Citrate"], "nlem": true, "tier": "essential", "available": true },
+    "ketorolac":      { "brands": ["Toradol", "Ketanov"], "nlem": false, "tier": "specialty", "available": true, "note": "NSAIDs contraindicated in CKD-3b" },
+    "diclofenac":     { "brands": ["Voveran", "Voltaren"], "nlem": true, "tier": "essential", "available": true, "note": "NSAIDs contraindicated in CKD-3b and cirrhosis" }
+  },
+
+  "hbv_antivirals": {
+    "entecavir":      { "brands": ["Baraclude", "Entavir"], "nlem": true, "tier": "essential", "available": true, "note": "First-line HBV prophylaxis perioperatively" },
+    "tenofovir_taf":  { "brands": ["Vemlidy"], "nlem": false, "tier": "specialty", "available": true },
+    "tenofovir_tdf":  { "brands": ["Tenof", "Viread"], "nlem": true, "tier": "essential", "available": true }
+  },
+
+  "hepatobiliary_specific": {
+    "ursodeoxycholic_acid": { "brands": ["Udiliv", "Ursocol"], "nlem": false, "tier": "specialty", "available": true },
+    "lactulose":      { "brands": ["Duphalac", "Looz"], "nlem": true, "tier": "essential", "available": true, "note": "Hepatic encephalopathy" },
+    "rifaximin":      { "brands": ["Rcifax", "Xifaxan"], "nlem": false, "tier": "specialty", "available": true },
+    "propranolol":    { "brands": ["Inderal", "Ciplar"], "nlem": true, "tier": "essential", "available": true, "note": "Portal hypertension — primary prophylaxis varices" },
+    "terlipressin":   { "brands": ["Glypressin", "Terlipressin"], "nlem": true, "tier": "essential", "available": true, "note": "Variceal bleeding; hepatorenal syndrome" }
+  },
+
+  "reversal_agents": {
+    "andexanet_alfa": { "brands": ["Andexxa"], "nlem": false, "tier": "unavailable_india", "available": false, "note": "NOT APPROVED/AVAILABLE in India as of 2026. Use 4-factor PCC (Octaplex/Octanine) as alternative for Factor Xa reversal." },
+    "idarucizumab":   { "brands": ["Praxbind"], "nlem": false, "tier": "specialty", "available": true, "note": "Dabigatran reversal only" },
+    "protamine":      { "brands": ["Protamine Sulphate"], "nlem": true, "tier": "essential", "available": true, "note": "Heparin reversal" },
+    "pcc_4factor":    { "brands": ["Octaplex", "Beriplex"], "nlem": false, "tier": "specialty", "available": true, "note": "Use for rivaroxaban/apixaban reversal when andexanet unavailable" },
+    "vitamin_k":      { "brands": ["Phytomenadione", "Mephyton"], "nlem": true, "tier": "essential", "available": true }
+  },
+
+  "immunosuppressants": {
+    "mycophenolate":  { "brands": ["CellCept", "Myfortic"], "nlem": false, "tier": "specialty", "available": true },
+    "methotrexate":   { "brands": ["Folitrax", "Neotrexate"], "nlem": true, "tier": "essential", "available": true },
+    "hydroxychloroquine": { "brands": ["HCQ", "Plaquenil"], "nlem": true, "tier": "essential", "available": true },
+    "prednisolone":   { "brands": ["Wysolone", "Omnacortil"], "nlem": true, "tier": "essential", "available": true }
+  },
+
+  "vasopressors_icu": {
+    "noradrenaline":  { "brands": ["Norad", "Levophed"], "nlem": true, "tier": "essential", "available": true },
+    "vasopressin":    { "brands": ["Pitressin"], "nlem": true, "tier": "essential", "available": true },
+    "dobutamine":     { "brands": ["Dobutamine"], "nlem": true, "tier": "essential", "available": true }
+  },
+
+  "unavailable_notable": {
+    "_note": "These drugs are commonly referenced in Western literature but have limited/no availability in India",
+    "andexanet_alfa": "Not available in India — use 4-factor PCC instead",
+    "ceftaroline":    "Not approved in India",
+    "daptomycin":     "Limited availability; expensive",
+    "caspofungin":    "Available in tertiary centres only"
+  }
+}

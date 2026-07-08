@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cram"
+version = "1.0.0"
+description = "CRAM-1 — Clinical Research Agent Model 1"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "prompt_toolkit>=3.0.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+pdf      = ["markdown>=3.5.0", "weasyprint>=60.0"]
+telegram = ["python-telegram-bot>=20.0"]
+gemini   = ["google-generativeai>=0.7.0"]
+dev      = ["pytest>=8.0.0", "pytest-cov>=4.0.0"]
+
+[project.scripts]
+cram = "cram.cli:main"
+
+# Package layout: root dir IS the cram package (unconventional flat layout)
+# setup.py handles the package-dir mapping; we just declare the build system here.
+[tool.setuptools]
+packages = ["cram"]
+
+[tool.setuptools.package-dir]
+"cram" = "."
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "unit: fast unit tests",
+    "integration: integration tests with mocked network",
+    "e2e: end-to-end tests (slow, mocked)",
+]
