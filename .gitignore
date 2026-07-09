@@ -52,3 +52,7 @@ htmlcov/
 
 # ── Lock files (keep uv.lock, ignore pip) ────────────────────────────────────
 # uv.lock is intentionally committed for reproducibility
+
+# eval: ignore timestamped run outputs, keep the committed baseline
+eval/results/recall_*.json
+eval/results/planted_*.json
