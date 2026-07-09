@@ -290,13 +290,15 @@ All data lives in `~/.cram/` (configurable via `CRAM_DATA_DIR`):
 
 ## Evidence Quality
 
-Every finding goes through three layers before reaching the final report:
+Every finding goes through four layers before reaching the final report:
 
-1. **Verification** — LLM checks each finding against the raw source snippet. Findings not supported by any source are removed. A "semantic rescue" layer (Layer 3) gives borderline findings a second chance by searching all accumulated raw results.
+1. **Retraction check** — Before anything is cited, every paper is checked for retraction. PubMed's `Retracted Publication` publication type is read for free; DOIs from other sources are checked against Crossref (backed by the [Retraction Watch](https://retractionwatch.com/) database). Retracted papers are marked `⚠️ RETRACTED`, downgraded to the lowest evidence grade, and the synthesis model is instructed never to rest a recommendation on them. Expression-of-concern papers are flagged too.
 
-2. **Citation verification** — After synthesis, every PMID/DOI/NCT in the report is checked against the actual search results. Hallucinated citations are silently removed (not tagged — doctors don't need to see noise).
+2. **Verification** — LLM checks each finding against the raw source snippet. Findings not supported by any source are removed. A "semantic rescue" layer (Layer 3) gives borderline findings a second chance by searching all accumulated raw results.
 
-3. **Combined review** — Single LLM pass adds `[UNSUPPORTED]`, `[CONTRADICTION]`, `⚠️` markers inline AND identifies genuine patient-safety issues (drug interactions, contraindications, missing SOC alternatives).
+3. **Citation verification** — After synthesis, every PMID/DOI/NCT in the report is checked against the actual search results. Hallucinated citations are removed.
+
+4. **Combined review** — Single LLM pass adds `[UNSUPPORTED]`, `[CONTRADICTION]`, `⚠️` markers inline AND identifies genuine patient-safety issues (drug interactions, contraindications, missing SOC alternatives).
 
 Evidence grades appear after every claim:
 ```
@@ -471,6 +473,7 @@ All HTTP (LLM API + search APIs) is mocked in tests. No real network calls. 160 
 
 - Every clinical claim requires a citation (PMID/DOI/NCT/URL)
 - Citations are verified against actual search results — hallucinated IDs removed
+- Retracted papers are detected (PubMed publication type + Crossref/Retraction Watch), flagged `⚠️ RETRACTED`, and excluded from supporting any recommendation
 - Findings marked `[UNSUPPORTED]` or removed if not backed by source snippets
 - Critical alerts (black-box warnings, Class I contraindications, mortality-signal drug interactions) are detected in real-time and written to `ALERTS.md` before the branch continues
 - Safety review gates the report: if flagged as not ready, a `🚨 NOT READY FOR CLINICAL USE` banner is prepended

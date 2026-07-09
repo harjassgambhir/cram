@@ -1899,5 +1899,79 @@ class TestPubMedAbstracts(unittest.TestCase):
         self.assertEqual(result, {})
 
 
+class TestRetraction(unittest.TestCase):
+    """Retraction / expression-of-concern detection (PubMed + Crossref)."""
+
+    def test_pubmed_pubtype_detected(self):
+        from cram.search.retraction import is_retracted_pub_type
+        self.assertTrue(is_retracted_pub_type(
+            ["Journal Article", "Retracted Publication"]))
+        self.assertFalse(is_retracted_pub_type(["Journal Article", "Review"]))
+        self.assertFalse(is_retracted_pub_type([]))
+        self.assertFalse(is_retracted_pub_type(None))
+
+    def test_annotate_flags_pubmed_retraction_free(self):
+        # PubMed retraction must be caught WITHOUT any network call.
+        from cram.search.retraction import annotate_retractions, RETRACTED_MARKER
+        results = [
+            {"source": "PubMed", "pmid": "9500320", "title": "Bad study",
+             "snippet": "findings", "pub_types": ["Retracted Publication"]},
+            {"source": "PubMed", "pmid": "111", "title": "Good study",
+             "snippet": "ok", "pub_types": ["Randomized Controlled Trial"]},
+        ]
+        with patch("cram.search.retraction._crossref_retraction") as mock_cr:
+            n = annotate_retractions(results)
+            mock_cr.assert_not_called()  # no DOI lookups needed for PubMed
+        self.assertEqual(n, 1)
+        self.assertTrue(results[0]["retracted"])
+        self.assertIn(RETRACTED_MARKER, results[0]["title"])
+        self.assertEqual(results[0]["evidence_grade"], "⚠️")
+        self.assertNotIn("retracted", results[1])
+
+    @patch("cram.search.retraction.requests.get")
+    def test_crossref_retraction_parsed(self, mock_get):
+        import tempfile, pathlib
+        import cram.search.base as base_mod
+        with tempfile.TemporaryDirectory() as td:
+            base_mod._query_cache = base_mod.QueryCache(pathlib.Path(td))
+            m = MagicMock()
+            m.status_code = 200
+            m.json.return_value = {"message": {"updated-by": [
+                {"DOI": "10.x/correction", "type": "correction",
+                 "updated": {"date-parts": [[2004]]}},
+                {"DOI": "10.x/retract", "type": "retraction",
+                 "updated": {"date-parts": [[2010]]}},
+            ]}}
+            mock_get.return_value = m
+            from cram.search.retraction import _crossref_retraction
+            hits = _crossref_retraction.__wrapped__("10.1016/x")
+            self.assertEqual(len(hits), 1)
+            self.assertEqual(hits[0]["status"], "retracted")
+            self.assertEqual(hits[0]["date"], 2010)
+
+    @patch("cram.search.retraction.requests.get")
+    def test_crossref_clean_doi_not_flagged(self, mock_get):
+        import tempfile, pathlib
+        import cram.search.base as base_mod
+        with tempfile.TemporaryDirectory() as td:
+            base_mod._query_cache = base_mod.QueryCache(pathlib.Path(td))
+            m = MagicMock()
+            m.status_code = 200
+            m.json.return_value = {"message": {"title": ["A fine paper"]}}
+            mock_get.return_value = m
+            from cram.search.retraction import _crossref_retraction
+            self.assertEqual(_crossref_retraction.__wrapped__("10.1/ok"), [])
+
+    def test_crossref_budget_bounds_lookups(self):
+        # More non-PubMed DOIs than the budget → only `crossref_limit` lookups.
+        from cram.search.retraction import annotate_retractions
+        results = [{"source": "CrossRef", "doi": f"10.x/{i}", "title": f"p{i}",
+                    "snippet": "s"} for i in range(20)]
+        with patch("cram.search.retraction._crossref_retraction",
+                   return_value=[]) as mock_cr:
+            annotate_retractions(results, crossref_limit=5)
+            self.assertEqual(mock_cr.call_count, 5)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
