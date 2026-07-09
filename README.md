@@ -1,7 +1,9 @@
 # CRAM-1
-## Evidence at the Moment It Matters
+## Deep clinical evidence synthesis in minutes, not hours
 
-AI-assisted clinical literature synthesis for doctors. Takes any clinical question — pre-op planning, study design, literature review, drug comparison — searches 17 medical sources in parallel, verifies every finding against raw source text, and produces a structured, evidence-graded report that actually answers what was asked.
+[![CI](https://github.com/harjassgambhir/cram/actions/workflows/ci.yml/badge.svg)](https://github.com/harjassgambhir/cram/actions/workflows/ci.yml)
+
+AI-assisted clinical literature synthesis for doctors. Takes any clinical question — pre-op planning, study design, literature review, drug comparison — searches 13 medical sources in parallel, verifies every finding against raw source text, and produces a structured, evidence-graded report that actually answers what was asked. A full run takes ~10–15 minutes: this is a deep lit-review tool, not a bedside lookup.
 
 > ⚠️ For clinical reference only. Does not replace clinical judgment, institutional protocols, or specialist consultation. Every claim must be verified against the cited source documents.
 
@@ -45,7 +47,7 @@ Question analysis      — detects question type, generates output structure
     ↓
 BFS decomposition      — splits into 6 parallel research branches
     ↓
-DFS search (parallel)  — searches 17 sources per branch, 2 depth levels
+DFS search (parallel)  — searches 13 sources per branch, 2 depth levels
     ↓
 Verification           — every finding checked against raw source text
     ↓
@@ -128,7 +130,9 @@ Chat commands:
 
 ---
 
-## Sources Searched (13 active)
+## Sources Searched
+
+**13 sources are searched in parallel on every run** (below). YouTube adds a 14th when `GEMINI_API_KEY` is set, and two post-search enrichment layers (Unpaywall, PMC full-text) fetch open-access full text for the top hits — they don't add new sources, they deepen existing ones.
 
 | Source | Coverage | Notes |
 |--------|----------|-------|
@@ -145,8 +149,9 @@ Chat commands:
 | **CTRI** | Indian clinical trial registry | Not on ClinicalTrials.gov; India-specific |
 | **OpenFDA** | FDA drug labels | Structured black-box warnings, contraindications |
 | **Exa** | Neural + keyword hybrid search | Full-page text extraction for top results |
-| **YouTube** *(opt-in)* | Surgical/clinical videos | Requires `GEMINI_API_KEY`; full transcript via Gemini |
+| **YouTube** *(opt-in, +1)* | Surgical/clinical videos | Requires `GEMINI_API_KEY`; full transcript via Gemini |
 | **Unpaywall** *(enrichment)* | Free full-text PDFs by DOI | Post-search; top 3 results |
+| **PMC full-text** *(enrichment)* | Open-access full text from PubMed Central | Post-search; escalates verification beyond the abstract |
 
 ---
 

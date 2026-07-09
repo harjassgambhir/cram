@@ -16,8 +16,8 @@ The one constraint that overrides everything else: **no hallucination, no droppe
 
 ```bash
 # Requires Python 3.11+ and uv
-git clone https://github.com/harjass/medagent.git
-cd medagent
+git clone https://github.com/harjassgambhir/cram.git
+cd cram
 
 uv sync
 cp .env.example .env

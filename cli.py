@@ -345,7 +345,7 @@ def _print_banner():
     log()
     log(bold("╔" + "═" * 58 + "╗"))
     log(bold("║  CRAM-1 — Clinical Research Agent Model 1" + " " * 11 + "║"))
-    log(bold("║  17 sources · AI synthesis · safety review" + " " * 14 + "║"))
+    log(bold("║  13 sources · AI synthesis · safety review" + " " * 14 + "║"))
     log(bold("╚" + "═" * 58 + "╝"))
 
 
