@@ -1,0 +1,94 @@
+{
+  "mode": "full",
+  "max_results": null,
+  "n_reviews": 5,
+  "micro_recall": 0.2481,
+  "macro_recall": 0.2846,
+  "total_included": 129,
+  "total_found": 32,
+  "timestamp": "2026-07-09T22:24:11.171259+00:00",
+  "per_review": [
+    {
+      "review_id": "CD010705",
+      "title": "The diagnostic accuracy of the GenoType\u00ae MTBDRsl assay for the detection of resistance to second-line anti-tuberculosis drugs",
+      "n_included": 18,
+      "n_retrieved": 181,
+      "n_found": 9,
+      "recall": 0.5,
+      "found_pmids": [
+        "19386845",
+        "20554815",
+        "21562102",
+        "22075597",
+        "22267773",
+        "23087027",
+        "23152552",
+        "23166667",
+        "24429319"
+      ]
+    },
+    {
+      "review_id": "CD009135",
+      "title": "Rapid tests for the diagnosis of visceral leishmaniasis in patients with suspected disease",
+      "n_included": 19,
+      "n_retrieved": 224,
+      "n_found": 4,
+      "recall": 0.2105,
+      "found_pmids": [
+        "19478251",
+        "23836568",
+        "24086782",
+        "9492776"
+      ]
+    },
+    {
+      "review_id": "CD010276",
+      "title": "Diagnostic tests for oral cancer and potentially malignant disorders in patients presenting with clinically evident lesions",
+      "n_included": 24,
+      "n_retrieved": 416,
+      "n_found": 4,
+      "recall": 0.1667,
+      "found_pmids": [
+        "20657091",
+        "21396880",
+        "22524200",
+        "9148038"
+      ]
+    },
+    {
+      "review_id": "CD009185",
+      "title": "Procalcitonin, C-reactive protein, and erythrocyte sedimentation rate for the diagnosis of acute pyelonephritis in children",
+      "n_included": 23,
+      "n_retrieved": 193,
+      "n_found": 10,
+      "recall": 0.4348,
+      "found_pmids": [
+        "10654988",
+        "11511988",
+        "15379054",
+        "15893462",
+        "17374489",
+        "17375337",
+        "17803473",
+        "19205751",
+        "20852370",
+        "21944121"
+      ]
+    },
+    {
+      "review_id": "CD007394",
+      "title": "Galactomannan detection for invasive aspergillosis in immunocompromised patients",
+      "n_included": 45,
+      "n_retrieved": 259,
+      "n_found": 5,
+      "recall": 0.1111,
+      "found_pmids": [
+        "11919250",
+        "14999641",
+        "15184460",
+        "15456366",
+        "17205865"
+      ]
+    }
+  ]
+}

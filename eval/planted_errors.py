@@ -85,6 +85,12 @@ def main():
     ap.add_argument("--out", help="write JSON summary to this path")
     args = ap.parse_args()
 
+    try:  # verifier is an LLM call — load the API key from .env
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+
     summary = evaluate(load_fixtures())
     print("\n" + "=" * 60)
     print(f"Planted-error catch rate: {summary['catch_rate']:.1%} "

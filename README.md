@@ -312,30 +312,22 @@ Evidence grades appear after every claim:
 
 ## Evaluation
 
-A tool that claims verification and trustworthiness should *measure* both, not just
-assert them. `eval/` turns two of CRAM's claims into numbers:
+CRAM measures its own claims instead of just asserting them, and tracks the
+numbers across versions so improvements are provable. Current baseline (2026-07-10):
 
-- **Cochrane recall** — does CRAM retrieve the studies a real Cochrane review
-  team included? Measured against the [CLEF eHealth TAR 2018](https://github.com/CLEF-TAR/tar)
-  gold standard (real reviews with per-study inclusion labels).
-- **Planted-error catch rate** — does the verifier remove fabricated findings
-  (invented effect sizes, made-up PMIDs) when they don't appear in the sources?
+| Metric | Result | Gold standard |
+|--------|-------:|---------------|
+| Cochrane recall — full pipeline | **24.8%** micro / 28.5% macro | [CLEF-TAR 2018](https://github.com/CLEF-TAR/tar) (5 reviews, 129 included studies) |
+| Cochrane recall — search-only floor | 16.3% / 19.9% | same, no-LLM reproducible |
+| Verifier catch rate / false-discard | **100% / 0%** | 18 planted vs true findings |
+
+These are honest *floors* (PMID-only matching; the full run was PubMed rate-limited
+without an `NCBI_API_KEY`). The running version log, exact methodology, replication
+steps, limitations, and roadmap live in **[`eval/BENCHMARKS.md`](eval/BENCHMARKS.md)**.
 
 ```bash
-uv run python -m cram.eval.build_dataset       # fetch gold standard
-uv run python -m cram.eval.cochrane_recall     # search-only: no LLM, no key, free
-uv run python -m cram.eval.cochrane_recall --full   # real pipeline (needs API key)
-uv run python -m cram.eval.planted_errors      # verifier catch rate (needs API key)
+uv run python -m cram.eval.build_dataset && uv run python -m cram.eval.cochrane_recall
 ```
-
-**Baseline** (search-only, 5 reviews, 129 included studies): micro-recall **16.3%**,
-macro **19.9%** — an honest *floor* from naive title-only queries against PubMed +
-Europe PMC alone. It ranges from 78% on a narrow, distinctively-named topic (a TB
-drug-resistance assay) down to 0% on broad ones, which is exactly the signal that
-motivates the retrieval roadmap (systematic-review anchoring, PICO + MeSH
-expansion, citation-graph traversal). `--full` mode measures the real BFS-driven
-system across all 13 sources. See [`eval/README.md`](eval/README.md) for method and
-per-review numbers.
 
 ---
 

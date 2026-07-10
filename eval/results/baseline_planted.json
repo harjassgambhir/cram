@@ -1,0 +1,10 @@
+{
+  "planted_total": 9,
+  "planted_caught": 9,
+  "catch_rate": 1.0,
+  "true_total": 9,
+  "true_dropped": 0,
+  "false_discard_rate": 0.0,
+  "timestamp": "2026-07-09T20:40:55.489203+00:00",
+  "misses": []
+}

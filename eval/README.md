@@ -38,25 +38,27 @@ Recall is matched on PMID, and only PubMed + Europe PMC emit PMIDs, so DOI-only
 sources (Semantic Scholar, Crossref, CORE, …) are not counted — the reported
 number is a genuine floor, not a ceiling.
 
-### Baseline result (search-only, 5 reviews, 129 included studies)
+### Baseline result (5 reviews, 129 included studies)
 
-See [`results/baseline_search_only.json`](results/baseline_search_only.json).
+Full pipeline vs the no-LLM search-only floor. Per-review JSON:
+[`results/baseline_full_pipeline.json`](results/baseline_full_pipeline.json),
+[`results/baseline_search_only.json`](results/baseline_search_only.json).
 
-| Review | Topic | Recall |
-|--------|-------|-------:|
-| CD010705 | GenoType MTBDRsl for 2nd-line anti-TB resistance | **78%** (14/18) |
-| CD007394 | Galactomannan for invasive aspergillosis | 11% (5/45) |
-| CD009135 | Rapid tests for visceral leishmaniasis | 11% (2/19) |
-| CD010276 | Diagnostic tests for oral cancer | 0% (0/24) |
-| CD009185 | Procalcitonin/CRP/ESR for paediatric pyelonephritis | 0% (0/23) |
-| **Pooled** | | **micro 16.3%, macro 19.9%** |
+| Review | Topic | Full pipeline | Search-only floor |
+|--------|-------|--------------:|------------------:|
+| CD010705 | GenoType MTBDRsl for 2nd-line anti-TB resistance | 50% (9/18) | 78% (14/18) |
+| CD009135 | Rapid tests for visceral leishmaniasis | 21% (4/19) | 11% (2/19) |
+| CD010276 | Diagnostic tests for oral cancer | 17% (4/24) | 0% (0/24) |
+| CD009185 | Procalcitonin/CRP/ESR for paediatric pyelonephritis | 43% (10/23) | 0% (0/23) |
+| CD007394 | Galactomannan for invasive aspergillosis | 11% (5/45) | 11% (5/45) |
+| **Pooled** | | **micro 24.8%, macro 28.5%** | micro 16.3%, macro 19.9% |
 
-**Reading this honestly:** naive title-only search is strong for narrow,
-distinctively-named topics (the TB assay review hits 78%) and weak for broad ones.
-That variance is the point — it quantifies exactly how much headroom the
-retrieval improvements on the roadmap (systematic-review anchoring, PICO + MeSH
-expansion, citation-graph traversal) need to close, and gives an honest floor to
-beat with `--full`.
+**Reading this honestly:** the full pipeline lifts pooled recall from 16.3% → 24.8%
+and rescues broad topics that title-only search missed entirely (oral cancer 0→17%,
+pyelonephritis 0→43%). It *dropped* on the narrow TB review (78→50%) because that
+run hit PubMed rate-limiting (117× HTTP 429 with no `NCBI_API_KEY`) — so 24.8% is a
+throttled floor. The running version log, limitations, and roadmap are in
+[`BENCHMARKS.md`](BENCHMARKS.md).
 
 ---
 

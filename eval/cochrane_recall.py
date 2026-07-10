@@ -177,6 +177,13 @@ def main():
     ap.add_argument("--out", help="write JSON summary to this path")
     args = ap.parse_args()
 
+    if args.full:  # real pipeline needs the API key from .env
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+        except ImportError:
+            pass
+
     reviews = load_dataset()
     if args.review:
         reviews = [r for r in reviews if r["review_id"] == args.review]
