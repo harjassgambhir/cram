@@ -42,6 +42,7 @@ from cram.search.unpaywall        import fetch_fulltext_for_results
 from cram.search.ctri             import tool_ctri
 from cram.search.openfda          import tool_openfda
 from cram.search.exa              import tool_exa, exa_get_contents
+from cram.search.retraction       import annotate_retractions
 
 _TIER1 = frozenset({"PubMed", "Cochrane", "EuropePMC", "SemanticScholar", "ClinicalTrials"})
 _TIER2 = frozenset({"CrossRef", "medRxiv", "CORE", "Guidelines", "OpenFDA"})
@@ -127,6 +128,11 @@ def comprehensive_search(query: str, memory: Optional[ResearchMemory] = None,
                     log(yellow(f"     ⚠  {name} failed ({count}/{SOURCE_FAILURE_THRESHOLD}): {e}"))
 
     all_results = dedup_results(all_results)
+
+    # Flag retracted / expression-of-concern papers (PubMed pub-type = free;
+    # non-PubMed DOIs checked against Crossref/Retraction Watch, bounded + cached)
+    # before anything downstream cites them.
+    annotate_retractions(all_results)
 
     if memory:
         memory.append_raw_results(all_results, query)

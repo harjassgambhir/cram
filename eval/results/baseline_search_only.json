@@ -1,0 +1,81 @@
+{
+  "mode": "search-only",
+  "max_results": 50,
+  "n_reviews": 5,
+  "micro_recall": 0.1628,
+  "macro_recall": 0.1988,
+  "total_included": 129,
+  "total_found": 21,
+  "timestamp": "2026-07-09T20:04:16.799694+00:00",
+  "per_review": [
+    {
+      "review_id": "CD010705",
+      "title": "The diagnostic accuracy of the GenoType\u00ae MTBDRsl assay for the detection of resistance to second-line anti-tuberculosis drugs",
+      "n_included": 18,
+      "n_retrieved": 129,
+      "n_found": 14,
+      "recall": 0.7778,
+      "found_pmids": [
+        "19386845",
+        "20554815",
+        "21562102",
+        "21955640",
+        "22075597",
+        "22236854",
+        "22267773",
+        "22378910",
+        "22698869",
+        "23087027",
+        "23152552",
+        "23159109",
+        "23166667",
+        "24429319"
+      ]
+    },
+    {
+      "review_id": "CD009135",
+      "title": "Rapid tests for the diagnosis of visceral leishmaniasis in patients with suspected disease",
+      "n_included": 19,
+      "n_retrieved": 255,
+      "n_found": 2,
+      "recall": 0.1053,
+      "found_pmids": [
+        "16407349",
+        "24086782"
+      ]
+    },
+    {
+      "review_id": "CD010276",
+      "title": "Diagnostic tests for oral cancer and potentially malignant disorders in patients presenting with clinically evident lesions",
+      "n_included": 24,
+      "n_retrieved": 223,
+      "n_found": 0,
+      "recall": 0.0,
+      "found_pmids": []
+    },
+    {
+      "review_id": "CD009185",
+      "title": "Procalcitonin, C-reactive protein, and erythrocyte sedimentation rate for the diagnosis of acute pyelonephritis in children",
+      "n_included": 23,
+      "n_retrieved": 165,
+      "n_found": 0,
+      "recall": 0.0,
+      "found_pmids": []
+    },
+    {
+      "review_id": "CD007394",
+      "title": "Galactomannan detection for invasive aspergillosis in immunocompromised patients",
+      "n_included": 45,
+      "n_retrieved": 197,
+      "n_found": 5,
+      "recall": 0.1111,
+      "found_pmids": [
+        "15114095",
+        "15243943",
+        "15456366",
+        "16175901",
+        "9636871"
+      ]
+    }
+  ]
+}

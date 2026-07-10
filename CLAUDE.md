@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CRAM-1 is a Python-based AI agent for clinical literature synthesis and research. It searches 17 medical literature sources (15 in parallel + 2 post-search enrichment) and synthesizes findings into structured clinical briefs with evidence grading and safety verification. Research strategy is fully dynamic — the LLM determines the research approach entirely from the input scenario with no predefined specialty types.
+CRAM-1 is a Python-based AI agent for clinical literature synthesis and research. It searches 13 medical literature sources in parallel (+ optional YouTube and 2 post-search full-text enrichment layers) and synthesizes findings into structured clinical briefs with evidence grading and safety verification. Research strategy is fully dynamic — the LLM determines the research approach entirely from the input scenario with no predefined specialty types.
 
 ## Commands
 
@@ -70,7 +70,7 @@ Each stage is a separate module called sequentially by `run.py`:
 1. **question_analyzer.py** — analyzes the scenario and generates `bfs_guidance`, `dfs_guidance`, `synthesis_guidance`, `output_sections`, and `practitioner_title` dynamically via LLM
 2. **intake.py** — optional structured intake form + scenario interrogation (clarifications/assumptions)
 3. **bfs.py** — decomposes scenario into N research branches (default 6), each with primary + followup queries
-4. **dfs.py** — depth-first search per branch across 15 sources in parallel, with post-search enrichment
+4. **dfs.py** — depth-first search per branch across 13 sources in parallel, with post-search enrichment
 5. **verifier.py** — validates every finding against raw source snippets; flags hallucinations
 6. **alerts.py** — detects black-box warnings, contraindications, drug interactions with mortality signals
 7. **contradiction.py** — cross-branch contradiction detection with severity scoring
@@ -83,7 +83,7 @@ Each stage is a separate module called sequentially by `run.py`:
 ### Search Layer (`search/`)
 - `base.py` — `SearchBase` class with SQLite WAL query cache, dedup logic, `@cached_search` and `with_retry` decorators
 - `result.py` — `SearchResult` dataclass (not yet adopted by all tools)
-- 17 source tools: pubmed, europe_pmc, semantic_scholar, open_alex, clinical_trials, cochrane, crossref, medrxiv, ddg, youtube, guidelines, fda_drug, core_api, doaj, ctri, openfda (parallel search) + unpaywall, pmc_fulltext (post-search enrichment)
+- 13 parallel source tools (wired in `pipeline/dfs.py::_PARALLEL_SOURCES`): pubmed, europe_pmc, semantic_scholar, clinical_trials, cochrane, crossref, medrxiv, brave, guidelines, core_api, ctri, openfda, exa. YouTube is added separately (opt-in, needs GEMINI_API_KEY). Post-search enrichment: unpaywall, pmc_fulltext. NOTE: `search/open_alex.py`, `doaj.py`, `ddg.py`, `fda_drug.py` exist but are NOT wired into the pipeline (dead code, referenced only by tests)
 - Sources use parallel workers (`CRAM_MAX_WORKERS`, default 6)
 
 ### LLM Provider (`provider/openrouter.py`)

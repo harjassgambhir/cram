@@ -1,7 +1,9 @@
 # CRAM-1
-## Evidence at the Moment It Matters
+## Deep clinical evidence synthesis in minutes, not hours
 
-AI-assisted clinical literature synthesis for doctors. Takes any clinical question — pre-op planning, study design, literature review, drug comparison — searches 17 medical sources in parallel, verifies every finding against raw source text, and produces a structured, evidence-graded report that actually answers what was asked.
+[![CI](https://github.com/harjassgambhir/cram/actions/workflows/ci.yml/badge.svg)](https://github.com/harjassgambhir/cram/actions/workflows/ci.yml)
+
+AI-assisted clinical literature synthesis for doctors. Takes any clinical question — pre-op planning, study design, literature review, drug comparison — searches 13 medical sources in parallel, verifies every finding against raw source text, and produces a structured, evidence-graded report that actually answers what was asked. A full run takes ~10–15 minutes: this is a deep lit-review tool, not a bedside lookup.
 
 > ⚠️ For clinical reference only. Does not replace clinical judgment, institutional protocols, or specialist consultation. Every claim must be verified against the cited source documents.
 
@@ -45,7 +47,7 @@ Question analysis      — detects question type, generates output structure
     ↓
 BFS decomposition      — splits into 6 parallel research branches
     ↓
-DFS search (parallel)  — searches 17 sources per branch, 2 depth levels
+DFS search (parallel)  — searches 13 sources per branch, 2 depth levels
     ↓
 Verification           — every finding checked against raw source text
     ↓
@@ -128,7 +130,9 @@ Chat commands:
 
 ---
 
-## Sources Searched (13 active)
+## Sources Searched
+
+**13 sources are searched in parallel on every run** (below). YouTube adds a 14th when `GEMINI_API_KEY` is set, and two post-search enrichment layers (Unpaywall, PMC full-text) fetch open-access full text for the top hits — they don't add new sources, they deepen existing ones.
 
 | Source | Coverage | Notes |
 |--------|----------|-------|
@@ -145,8 +149,9 @@ Chat commands:
 | **CTRI** | Indian clinical trial registry | Not on ClinicalTrials.gov; India-specific |
 | **OpenFDA** | FDA drug labels | Structured black-box warnings, contraindications |
 | **Exa** | Neural + keyword hybrid search | Full-page text extraction for top results |
-| **YouTube** *(opt-in)* | Surgical/clinical videos | Requires `GEMINI_API_KEY`; full transcript via Gemini |
+| **YouTube** *(opt-in, +1)* | Surgical/clinical videos | Requires `GEMINI_API_KEY`; full transcript via Gemini |
 | **Unpaywall** *(enrichment)* | Free full-text PDFs by DOI | Post-search; top 3 results |
+| **PMC full-text** *(enrichment)* | Open-access full text from PubMed Central | Post-search; escalates verification beyond the abstract |
 
 ---
 
@@ -285,13 +290,15 @@ All data lives in `~/.cram/` (configurable via `CRAM_DATA_DIR`):
 
 ## Evidence Quality
 
-Every finding goes through three layers before reaching the final report:
+Every finding goes through four layers before reaching the final report:
 
-1. **Verification** — LLM checks each finding against the raw source snippet. Findings not supported by any source are removed. A "semantic rescue" layer (Layer 3) gives borderline findings a second chance by searching all accumulated raw results.
+1. **Retraction check** — Before anything is cited, every paper is checked for retraction. PubMed's `Retracted Publication` publication type is read for free; DOIs from other sources are checked against Crossref (backed by the [Retraction Watch](https://retractionwatch.com/) database). Retracted papers are marked `⚠️ RETRACTED`, downgraded to the lowest evidence grade, and the synthesis model is instructed never to rest a recommendation on them. Expression-of-concern papers are flagged too.
 
-2. **Citation verification** — After synthesis, every PMID/DOI/NCT in the report is checked against the actual search results. Hallucinated citations are silently removed (not tagged — doctors don't need to see noise).
+2. **Verification** — LLM checks each finding against the raw source snippet. Findings not supported by any source are removed. A "semantic rescue" layer (Layer 3) gives borderline findings a second chance by searching all accumulated raw results.
 
-3. **Combined review** — Single LLM pass adds `[UNSUPPORTED]`, `[CONTRADICTION]`, `⚠️` markers inline AND identifies genuine patient-safety issues (drug interactions, contraindications, missing SOC alternatives).
+3. **Citation verification** — After synthesis, every PMID/DOI/NCT in the report is checked against the actual search results. Hallucinated citations are removed.
+
+4. **Combined review** — Single LLM pass adds `[UNSUPPORTED]`, `[CONTRADICTION]`, `⚠️` markers inline AND identifies genuine patient-safety issues (drug interactions, contraindications, missing SOC alternatives).
 
 Evidence grades appear after every claim:
 ```
@@ -299,6 +306,27 @@ Evidence grades appear after every claim:
 🟡🟡 SR of cohort studies           🟡  Cohort / observational
 🟠   Case-control                   🔴  Case series / case report
 ⚫   Expert opinion / consensus      ⚠️  Unverified / unclear
+```
+
+---
+
+## Evaluation
+
+CRAM measures its own claims instead of just asserting them, and tracks the
+numbers across versions so improvements are provable. Current baseline (2026-07-10):
+
+| Metric | Result | Gold standard |
+|--------|-------:|---------------|
+| Cochrane recall — full pipeline | **24.8%** micro / 28.5% macro | [CLEF-TAR 2018](https://github.com/CLEF-TAR/tar) (5 reviews, 129 included studies) |
+| Cochrane recall — search-only floor | 16.3% / 19.9% | same, no-LLM reproducible |
+| Verifier catch rate / false-discard | **100% / 0%** | 18 planted vs true findings |
+
+These are honest *floors* (PMID-only matching; the full run was PubMed rate-limited
+without an `NCBI_API_KEY`). The running version log, exact methodology, replication
+steps, limitations, and roadmap live in **[`eval/BENCHMARKS.md`](eval/BENCHMARKS.md)**.
+
+```bash
+uv run python -m cram.eval.build_dataset && uv run python -m cram.eval.cochrane_recall
 ```
 
 ---
@@ -466,6 +494,7 @@ All HTTP (LLM API + search APIs) is mocked in tests. No real network calls. 160 
 
 - Every clinical claim requires a citation (PMID/DOI/NCT/URL)
 - Citations are verified against actual search results — hallucinated IDs removed
+- Retracted papers are detected (PubMed publication type + Crossref/Retraction Watch), flagged `⚠️ RETRACTED`, and excluded from supporting any recommendation
 - Findings marked `[UNSUPPORTED]` or removed if not backed by source snippets
 - Critical alerts (black-box warnings, Class I contraindications, mortality-signal drug interactions) are detected in real-time and written to `ALERTS.md` before the branch continues
 - Safety review gates the report: if flagged as not ready, a `🚨 NOT READY FOR CLINICAL USE` banner is prepended

@@ -16,8 +16,8 @@ build/
 *.so
 
 # ── Runtime data (user-specific, never committed) ─────────────────────────────
-~/.medagent/
-.medagent/
+~/.cram/
+.cram/
 
 # ── Generated outputs ────────────────────────────────────────────────────────
 report_*.md
@@ -52,3 +52,9 @@ htmlcov/
 
 # ── Lock files (keep uv.lock, ignore pip) ────────────────────────────────────
 # uv.lock is intentionally committed for reproducibility
+
+# eval: ignore ad-hoc run outputs, keep committed baseline_*.json artifacts
+eval/results/recall_*.json
+eval/results/planted_*.json
+eval/results/full_pipeline.json
+eval/results/*.log
