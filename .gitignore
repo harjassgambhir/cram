@@ -57,3 +57,4 @@ htmlcov/
 eval/results/recall_*.json
 eval/results/planted_*.json
 eval/results/full_pipeline.json
+eval/results/*.log
