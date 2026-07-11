@@ -125,6 +125,11 @@ def _clean_citation_artifacts(report: str) -> str:
     subs = [
         (r"\(\s*(?:DOI|PMID|NCT)\s*[:#]?\s*(?:N/?A|none|n/a|—|-)?\s*\)", ""),   # (DOI: N/A), (PMID: )
         (r"\[\s*(?:DOI|PMID|NCT)\s*[:#]?\s*\]", ""),                            # [PMID: ]
+        # Dangling "Author Year:" left after a stripped citation ID — a colon
+        # immediately before a closing ) ] or a ; separator (e.g. "Takemura 2025:)"
+        # → "Takemura 2025)", "JAAOS 2020:;" → "JAAOS 2020;"). Colons followed by a
+        # real citation ("Br J Anaesth: DOI 10...") are untouched.
+        (r":(\s*[)\];])", r"\1"),
         (r"\[\s*\]", ""),                                                        # empty []
         (r"\(\s*\)", ""),                                                        # empty ()
         (r",[ \t]*\)", ")"),                                                     # (2026,) → (2026)
@@ -344,6 +349,11 @@ def synthesize_report(
             log(yellow("  [REVIEW] Residual issues — applying final targeted correction"))
             # Bounded: trust this pass, no third review (avoids cost blow-up / loops)
             report, safety_section, ready = _correction_pass(report, safety_section, scenario)
+
+    # Re-apply after review/correction passes: those rewrite the report through the
+    # LLM and routinely strip the mermaid code fence back out (the fix at line ~331
+    # runs before them). This final pass guarantees the shipped report is fenced.
+    report = _fix_mermaid_fences(report)
 
     return alerts_section + report, all_raw, safety_section, ready
 

@@ -1974,6 +1974,65 @@ class TestRetraction(unittest.TestCase):
             self.assertEqual(mock_cr.call_count, 5)
 
 
+class TestMermaidFences(unittest.TestCase):
+    """A bare `mermaid` block must be wrapped in a ```mermaid code fence so it
+    renders. The review/correction LLM passes strip the fence, so synthesis must
+    re-apply the fix after them (regression: reports shipped with broken diagrams)."""
+
+    def test_bare_block_gets_fenced(self):
+        from cram.pipeline.synthesis import _fix_mermaid_fences
+        bare = "## Plan\n\nmermaid\ngraph TD\n A --> B\n B --> C\n\n**Next:** text\n"
+        out = _fix_mermaid_fences(bare)
+        self.assertIn("```mermaid\ngraph TD", out)
+        self.assertIn("B --> C\n```", out)
+        self.assertNotIn("\nmermaid\ngraph", out)
+
+    def test_already_fenced_untouched(self):
+        from cram.pipeline.synthesis import _fix_mermaid_fences
+        fenced = "```mermaid\ngraph TD\n A --> B\n```\n"
+        self.assertEqual(_fix_mermaid_fences(fenced), fenced)
+
+
+class TestCitationArtifacts(unittest.TestCase):
+    """After an unverified citation ID is stripped, no dangling 'Author Year:'
+    debris should remain (e.g. 'Takemura 2025:)' → 'Takemura 2025)')."""
+
+    def test_dangling_colon_before_close_removed(self):
+        from cram.pipeline.synthesis import _clean_citation_artifacts
+        self.assertEqual(
+            _clean_citation_artifacts("(SPAQI 2026; Takemura 2025:)."),
+            "(SPAQI 2026; Takemura 2025).")
+        self.assertEqual(
+            _clean_citation_artifacts("(JAAOS 2020:; Arthroplasty 2025)"),
+            "(JAAOS 2020; Arthroplasty 2025)")
+
+    def test_real_colons_preserved(self):
+        from cram.pipeline.synthesis import _clean_citation_artifacts
+        # time, ratio, and a colon that precedes a real citation must survive
+        for s in ("surgery at 08:30) today", "ratio 3:1 seen",
+                  "Br J Anaesth: DOI 10.1016/j.bja.2026.02.031)"):
+            self.assertEqual(_clean_citation_artifacts(s), s)
+
+
+class TestIntakeEmptyNotes(unittest.TestCase):
+    """A scenario-interrogation that yields nothing must not emit a bare
+    '## Scenario Notes' header with no content (regression: peri-op example)."""
+
+    def test_empty_result_emits_no_block(self):
+        with patch("cram.pipeline.intake.llm_json", return_value={}):
+            from cram.pipeline.intake import interrogate_scenario
+            self.assertEqual(interrogate_scenario("some scenario"), "")
+
+    def test_nonempty_result_has_header(self):
+        payload = {"decision": "Decide X", "audience": "Cardiologist",
+                   "assumptions": ["A1"], "missing": []}
+        with patch("cram.pipeline.intake.llm_json", return_value=payload):
+            from cram.pipeline.intake import interrogate_scenario
+            out = interrogate_scenario("some scenario")
+            self.assertIn("## Scenario Notes", out)
+            self.assertIn("Interpreted as:", out)
+
+
 class TestReplStartup(unittest.TestCase):
     """Regression: `uv run cram` must not crash on startup.
 
