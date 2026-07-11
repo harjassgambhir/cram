@@ -1993,6 +1993,46 @@ class TestMermaidFences(unittest.TestCase):
         self.assertEqual(_fix_mermaid_fences(fenced), fenced)
 
 
+class TestCitationArtifacts(unittest.TestCase):
+    """After an unverified citation ID is stripped, no dangling 'Author Year:'
+    debris should remain (e.g. 'Takemura 2025:)' → 'Takemura 2025)')."""
+
+    def test_dangling_colon_before_close_removed(self):
+        from cram.pipeline.synthesis import _clean_citation_artifacts
+        self.assertEqual(
+            _clean_citation_artifacts("(SPAQI 2026; Takemura 2025:)."),
+            "(SPAQI 2026; Takemura 2025).")
+        self.assertEqual(
+            _clean_citation_artifacts("(JAAOS 2020:; Arthroplasty 2025)"),
+            "(JAAOS 2020; Arthroplasty 2025)")
+
+    def test_real_colons_preserved(self):
+        from cram.pipeline.synthesis import _clean_citation_artifacts
+        # time, ratio, and a colon that precedes a real citation must survive
+        for s in ("surgery at 08:30) today", "ratio 3:1 seen",
+                  "Br J Anaesth: DOI 10.1016/j.bja.2026.02.031)"):
+            self.assertEqual(_clean_citation_artifacts(s), s)
+
+
+class TestIntakeEmptyNotes(unittest.TestCase):
+    """A scenario-interrogation that yields nothing must not emit a bare
+    '## Scenario Notes' header with no content (regression: peri-op example)."""
+
+    def test_empty_result_emits_no_block(self):
+        with patch("cram.pipeline.intake.llm_json", return_value={}):
+            from cram.pipeline.intake import interrogate_scenario
+            self.assertEqual(interrogate_scenario("some scenario"), "")
+
+    def test_nonempty_result_has_header(self):
+        payload = {"decision": "Decide X", "audience": "Cardiologist",
+                   "assumptions": ["A1"], "missing": []}
+        with patch("cram.pipeline.intake.llm_json", return_value=payload):
+            from cram.pipeline.intake import interrogate_scenario
+            out = interrogate_scenario("some scenario")
+            self.assertIn("## Scenario Notes", out)
+            self.assertIn("Interpreted as:", out)
+
+
 class TestReplStartup(unittest.TestCase):
     """Regression: `uv run cram` must not crash on startup.
 

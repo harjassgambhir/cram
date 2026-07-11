@@ -146,12 +146,12 @@ def interrogate_scenario(scenario: str) -> str:
 
         # Keep the block short — doctors don't have time for long preambles.
         # Max 3 assumptions, max 3 missing info items, no ambiguous terms wall.
-        lines = ["## Scenario Notes\n"]
+        body = []
 
         if result.get("decision"):
-            lines.append(f"**Interpreted as:** {result['decision']}")
+            body.append(f"**Interpreted as:** {result['decision']}")
         if result.get("audience"):
-            lines.append(f"**For:** {result['audience']}\n")
+            body.append(f"**For:** {result['audience']}\n")
 
         # Merge assumptions + missing, cap at 5 total
         notes = []
@@ -160,10 +160,16 @@ def interrogate_scenario(scenario: str) -> str:
         for m in result.get("missing", [])[:2]:
             notes.append(f"- Note: {m} not specified — proceeding with best available evidence")
         if notes:
-            lines.extend(notes)
-            lines.append("")
+            body.extend(notes)
+            body.append("")
 
-        block = "\n".join(lines) + "\n---\n\n"
+        # If interrogation yielded nothing usable, emit no block at all — never a
+        # bare "## Scenario Notes" header with no content under it.
+        if not body:
+            log(dim("  [INTAKE] Interrogation returned no notes — omitting section"))
+            return ""
+
+        block = "\n".join(["## Scenario Notes\n"] + body) + "\n---\n\n"
         log(dim(f"  [INTAKE] Interrogation complete — {len(result.get('assumptions',[]))} assumptions, "
                 f"{len(result.get('missing',[]))} gaps identified"))
         return block

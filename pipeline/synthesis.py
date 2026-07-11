@@ -125,6 +125,11 @@ def _clean_citation_artifacts(report: str) -> str:
     subs = [
         (r"\(\s*(?:DOI|PMID|NCT)\s*[:#]?\s*(?:N/?A|none|n/a|—|-)?\s*\)", ""),   # (DOI: N/A), (PMID: )
         (r"\[\s*(?:DOI|PMID|NCT)\s*[:#]?\s*\]", ""),                            # [PMID: ]
+        # Dangling "Author Year:" left after a stripped citation ID — a colon
+        # immediately before a closing ) ] or a ; separator (e.g. "Takemura 2025:)"
+        # → "Takemura 2025)", "JAAOS 2020:;" → "JAAOS 2020;"). Colons followed by a
+        # real citation ("Br J Anaesth: DOI 10...") are untouched.
+        (r":(\s*[)\];])", r"\1"),
         (r"\[\s*\]", ""),                                                        # empty []
         (r"\(\s*\)", ""),                                                        # empty ()
         (r",[ \t]*\)", ")"),                                                     # (2026,) → (2026)
