@@ -538,7 +538,6 @@ def _repl(args):
             last_session_dir = _repl_run_research(line, args, pdf=_pdf_on)
             if last_session_dir:
                 from cram.pipeline.chat import session_chat_loop
-                import sys
                 sys.stdout.write("\033[0m")  # reset any leftover ANSI state
                 sys.stdout.flush()
                 session_chat_loop(last_session_dir, auto_entered=True)

@@ -10,6 +10,7 @@ import json
 import os
 import pathlib
 import sqlite3
+import sys
 import tempfile
 import threading
 import time
@@ -1971,6 +1972,38 @@ class TestRetraction(unittest.TestCase):
                    return_value=[]) as mock_cr:
             annotate_retractions(results, crossref_limit=5)
             self.assertEqual(mock_cr.call_count, 5)
+
+
+class TestReplStartup(unittest.TestCase):
+    """Regression: `uv run cram` must not crash on startup.
+
+    A local `import sys` inside cli._repl once shadowed the module-level import,
+    making `sys` a cell variable and breaking the nested _repl_input closure with
+    'NameError: cannot access free variable sys' on the very first prompt.
+    """
+
+    def test_repl_does_not_shadow_module_globals(self):
+        import cram.cli as cli
+        code = cli._repl.__code__
+        # If `sys` (or any already-imported module) is assigned inside _repl it
+        # becomes local/cell-scoped and the nested closures break.
+        for name in ("sys", "json", "argparse"):
+            self.assertNotIn(name, code.co_varnames,
+                             f"{name} must not be a local of _repl (shadows global)")
+            self.assertNotIn(name, code.co_cellvars,
+                             f"{name} must not be cell-scoped in _repl")
+
+    def test_repl_starts_and_quits_cleanly(self):
+        import subprocess
+        env = dict(os.environ, OPENROUTER_API_KEY="test-key-not-real")
+        proc = subprocess.run(
+            [sys.executable, "-c", "from cram.cli import main; main()"],
+            input="/quit\n", capture_output=True, text=True, timeout=60, env=env,
+        )
+        out = proc.stdout + proc.stderr
+        self.assertNotIn("NameError", out, out[-500:])
+        self.assertNotIn("Traceback", out, out[-500:])
+        self.assertEqual(proc.returncode, 0)
 
 
 if __name__ == "__main__":
