@@ -345,6 +345,11 @@ def synthesize_report(
             # Bounded: trust this pass, no third review (avoids cost blow-up / loops)
             report, safety_section, ready = _correction_pass(report, safety_section, scenario)
 
+    # Re-apply after review/correction passes: those rewrite the report through the
+    # LLM and routinely strip the mermaid code fence back out (the fix at line ~331
+    # runs before them). This final pass guarantees the shipped report is fenced.
+    report = _fix_mermaid_fences(report)
+
     return alerts_section + report, all_raw, safety_section, ready
 
 

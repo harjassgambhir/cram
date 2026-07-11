@@ -1974,6 +1974,25 @@ class TestRetraction(unittest.TestCase):
             self.assertEqual(mock_cr.call_count, 5)
 
 
+class TestMermaidFences(unittest.TestCase):
+    """A bare `mermaid` block must be wrapped in a ```mermaid code fence so it
+    renders. The review/correction LLM passes strip the fence, so synthesis must
+    re-apply the fix after them (regression: reports shipped with broken diagrams)."""
+
+    def test_bare_block_gets_fenced(self):
+        from cram.pipeline.synthesis import _fix_mermaid_fences
+        bare = "## Plan\n\nmermaid\ngraph TD\n A --> B\n B --> C\n\n**Next:** text\n"
+        out = _fix_mermaid_fences(bare)
+        self.assertIn("```mermaid\ngraph TD", out)
+        self.assertIn("B --> C\n```", out)
+        self.assertNotIn("\nmermaid\ngraph", out)
+
+    def test_already_fenced_untouched(self):
+        from cram.pipeline.synthesis import _fix_mermaid_fences
+        fenced = "```mermaid\ngraph TD\n A --> B\n```\n"
+        self.assertEqual(_fix_mermaid_fences(fenced), fenced)
+
+
 class TestReplStartup(unittest.TestCase):
     """Regression: `uv run cram` must not crash on startup.
 
