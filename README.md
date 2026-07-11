@@ -7,6 +7,8 @@ AI-assisted clinical literature synthesis for doctors. Takes any clinical questi
 
 > ⚠️ For clinical reference only. Does not replace clinical judgment, institutional protocols, or specialist consultation. Every claim must be verified against the cited source documents.
 
+📄 **See what it produces — [real example reports](examples/)** (no API key needed): a complex SGLT2i decision, a multi-morbidity pre-op brief, and an India TB trial design.
+
 ---
 
 ## Quick Start
