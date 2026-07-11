@@ -2111,5 +2111,43 @@ class TestReplStartup(unittest.TestCase):
         self.assertEqual(proc.returncode, 0)
 
 
+class TestPdfFooter(unittest.TestCase):
+    """A forwarded PDF is CRAM's distribution channel — every report must carry
+    attribution + a route to report errors, and the disclaimer must travel with it."""
+
+    def test_footer_constant_has_repo_and_issue_links(self):
+        from cram.pipeline.pdf import _REPORT_FOOTER_HTML, _REPO_URL, _ISSUE_URL
+        self.assertIn(_REPO_URL, _REPORT_FOOTER_HTML)
+        self.assertIn(_ISSUE_URL, _REPORT_FOOTER_HTML)
+        self.assertIn("Report it here", _REPORT_FOOTER_HTML)
+        # disclaimer survives even when the brief is shared without the README
+        self.assertIn("checked against its cited source", _REPORT_FOOTER_HTML)
+
+    def test_footer_links_embedded_in_rendered_pdf(self):
+        try:
+            import weasyprint  # noqa: F401
+            import markdown    # noqa: F401
+        except Exception:
+            self.skipTest("weasyprint/markdown not installed (optional PDF deps)")
+        import tempfile, pathlib
+        from cram.pipeline.pdf import markdown_to_pdf, _REPO_URL, _ISSUE_URL
+        with tempfile.TemporaryDirectory() as td:
+            md = pathlib.Path(td) / "r.md"
+            md.write_text("# Test Brief\n\nMortality was 5%.\n")
+            out = markdown_to_pdf(md)
+            self.assertIsNotNone(out)
+            try:
+                from pypdf import PdfReader
+            except Exception:
+                self.skipTest("pypdf not installed")
+            uris = []
+            for a in (PdfReader(str(out)).pages[0].get("/Annots", []) or []):
+                act = a.get_object().get("/A", {})
+                if act.get("/URI"):
+                    uris.append(act["/URI"])
+            self.assertIn(_REPO_URL, uris)
+            self.assertIn(_ISSUE_URL, uris)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
