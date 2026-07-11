@@ -1483,6 +1483,52 @@ class TestVerifier(unittest.TestCase):
             result = verify_findings(["Fake stat 99%"], "some snippets", memory=mem)
         self.assertEqual(len(result), 0)
 
+    @patch("cram.pipeline.verifier.llm_json")
+    def test_semantic_rescue_llm_failure_fails_closed(self, mock_llm):
+        """Regression: if the rescue LLM errors WHILE candidate snippets exist,
+        the flagged claim must be DROPPED (fail-closed), not resurrected — and the
+        drop must be logged with a rescue-llm-failure reason (never silent).
+        The old code did `return bool(candidate_snippets)` here → fail-open."""
+        import tempfile, pathlib
+        from cram.memory.store import ResearchMemory
+        from cram.pipeline import verifier
+
+        def _side_effect(*args, **kwargs):
+            # primary verify call → REMOVE; rescue call → raises
+            if "rescue" in kwargs.get("label", ""):
+                raise RuntimeError("simulated rescue LLM outage")
+            return {"verified": [{"original": "Dabigatran reduces stroke recurrence",
+                                  "action": "REMOVE", "revised": "",
+                                  "reason": "Not in snippets", "evidence_grade": "U"}]}
+        mock_llm.side_effect = _side_effect
+
+        with tempfile.TemporaryDirectory() as td:
+            mem = ResearchMemory(pathlib.Path(td) / "sess")
+            # Word-matches "Dabigatran" so candidate_snippets is non-empty — exactly
+            # the case the old fail-open kept purely on keyword co-occurrence.
+            mem.append_raw_results([
+                {"pmid": "1", "title": "Dabigatran cohort in atrial fibrillation",
+                 "snippet": "observational registry data"}
+            ], "q")
+            verifier.reset_discarded()
+            result = verifier.verify_findings(
+                ["Dabigatran reduces stroke recurrence"], "some snippets", memory=mem)
+
+        self.assertEqual(len(result), 0)  # fail closed — claim dropped
+        discarded = verifier.get_discarded()
+        self.assertEqual(len(discarded), 1)  # and logged, not silent
+        self.assertIn("rescue-llm-failure", discarded[0]["reason"])
+
+    def test_content_tokens_keeps_short_acronyms(self):
+        """Candidate retrieval must keep short clinical acronyms (the old
+        `len(w) > 5` filter dropped DOAC/PE/TB/DKA — the domain's own vocabulary)."""
+        from cram.pipeline.verifier import _content_tokens
+        toks = _content_tokens("DOAC vs warfarin for PE and TB in DKA")
+        for acr in ("DOAC", "PE", "TB", "DKA"):
+            self.assertIn(acr, toks)
+        for stop in ("vs", "for", "and", "in"):
+            self.assertNotIn(stop, toks)
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION — Unknown Unknowns (Task 5.4)

@@ -27,15 +27,37 @@ def get_discarded() -> list[dict]:
     return list(_discarded_findings)
 
 
-def _semantic_rescue(claim: str, memory: ResearchMemory) -> bool:
+def _content_tokens(claim: str) -> list[str]:
+    """
+    Content words used to grep raw results for rescue candidates.
+    Keeps long words AND short clinical acronyms (TB, PE, DOAC, ACEi, INR, DKA,
+    SGLT2i) — precisely the vocabulary a bare `len(w) > 5` filter would drop.
+    """
+    toks: list[str] = []
+    for raw in claim.split():
+        w = raw.strip(".,;:()[]{}\"'")
+        if not w:
+            continue
+        # long content word, or a short token with >=2 uppercase letters (acronym)
+        if len(w) > 5 or sum(c.isupper() for c in w) >= 2:
+            toks.append(w)
+    return toks[:6]
+
+
+def _semantic_rescue(claim: str, memory: ResearchMemory) -> str:
     """
     Layer 3 semantic rescue: search raw results for any snippet that
-    actually supports the specific claim. Uses LLM semantic check rather
-    than loose word matching.
-    Returns True if rescue succeeds (claim is supported), False otherwise.
+    actually supports the specific claim, via an LLM semantic check.
+
+    Returns one of:
+      "supported"     — a raw snippet genuinely supports the claim; keep it.
+      "unsupported"   — no snippet supports it; stay dropped.
+      "rescue-failed" — the rescue LLM errored. FAIL CLOSED: a safety check that
+                        cannot run must never resurrect a flagged claim. Caller
+                        drops the finding and logs the reason (not silently).
     """
     # Pull candidate snippets from raw results — search for content words
-    words = [w for w in claim.split() if len(w) > 5][:4]
+    words = _content_tokens(claim)
     candidate_snippets: list[str] = []
     seen: set[str] = set()
 
@@ -52,7 +74,7 @@ def _semantic_rescue(claim: str, memory: ResearchMemory) -> bool:
             break
 
     if not candidate_snippets:
-        return False
+        return "unsupported"
 
     # Semantic check: does any candidate actually support the claim?
     snippets_text = "\n---\n".join(candidate_snippets[:6])
@@ -70,10 +92,13 @@ def _semantic_rescue(claim: str, memory: ResearchMemory) -> bool:
             label="rescue check",
             phase="verify",
         )
-        return bool(result.get("supported", False))
+        return "supported" if bool(result.get("supported", False)) else "unsupported"
     except Exception:
-        # On LLM failure, fall back to conservative word-match (old behaviour)
-        return bool(candidate_snippets)
+        # FAIL CLOSED. The old behaviour returned bool(candidate_snippets), which
+        # resurrected a verifier-flagged claim whenever a keyword grep found any
+        # loosely-related snippet — a fail-open hole in the safety checker. An
+        # errored rescue must not keep an unverified claim.
+        return "rescue-failed"
 
 
 def verify_findings(findings: list[str], raw_snippets: str,
@@ -108,24 +133,30 @@ def verify_findings(findings: list[str], raw_snippets: str,
         kept     = []
 
         for v in verified:
-            action   = v.get("action", "KEEP")
-            original = v.get("original", "")
-            revised  = v.get("revised") or original
-            grade    = v.get("evidence_grade", "U")
+            action     = v.get("action", "KEEP")
+            original   = v.get("original", "")
+            revised    = v.get("revised") or original
+            grade      = v.get("evidence_grade", "U")
+            drop_reason = v.get("reason", action)
 
             # [11] Before REMOVE/WEAKEN: semantic rescue via Layer 3
             if action in ("REMOVE", "WEAKEN") and memory:
-                rescued = _semantic_rescue(original, memory)
-                if rescued:
+                status = _semantic_rescue(original, memory)
+                if status == "supported":
                     log(dim(f"  [VERIFY] L3 semantic rescue: kept — {original[:70]}"))
                     action  = "KEEP"
                     revised = original
+                elif status == "rescue-failed":
+                    # Fail closed: keep the finding dropped, but record WHY so it
+                    # surfaces in "Other Directions Explored" — never silent.
+                    drop_reason = "rescue-llm-failure (fail-closed: unverified claim discarded)"
+                    log(yellow(f"  [VERIFY] rescue LLM failed — failing closed, dropping: {original[:70]}"))
 
             if action in ("REMOVE", "WEAKEN"):
                 log(yellow(f"  [VERIFY] DROPPED [{action}]: {original[:70]}"))
                 _discarded_findings.append({
                     "finding": original[:500],  # display layer handles truncation
-                    "reason": v.get("reason", action),
+                    "reason": drop_reason,
                     "label": label,
                 })
             else:
