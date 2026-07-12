@@ -54,7 +54,7 @@ h2 {
 
 h3 {
     font-size: 12pt;
-    font-weight: bold;
+    font-weight: normal;
     color: #2a3a5a;
     margin-top: 12pt;
     page-break-after: avoid;
@@ -62,7 +62,7 @@ h3 {
 
 h4 {
     font-size: 11pt;
-    font-weight: bold;
+    font-weight: normal;
     color: #3a4a6a;
     margin-top: 10pt;
     page-break-after: avoid;
