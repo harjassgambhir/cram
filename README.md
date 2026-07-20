@@ -3,7 +3,7 @@
 
 [![CI](https://github.com/harjassgambhir/cram/actions/workflows/ci.yml/badge.svg)](https://github.com/harjassgambhir/cram/actions/workflows/ci.yml)
 
-AI-assisted clinical literature synthesis for doctors. Takes any clinical question — pre-op planning, study design, literature review, drug comparison — searches 13 medical sources in parallel, verifies every finding against raw source text, and produces a structured, evidence-graded report that actually answers what was asked. A full run takes ~10–15 minutes: this is a deep lit-review tool, not a bedside lookup.
+AI-assisted clinical literature synthesis for doctors. Takes any clinical question — pre-op planning, study design, literature review, drug comparison — searches 13 medical sources in parallel, verifies every finding against raw source text, and produces a structured, evidence-graded report that actually answers what was asked. A full run takes ~20–30 minutes: this is a deep lit-review tool, not a bedside lookup.
 
 > ⚠️ For clinical reference only. Does not replace clinical judgment, institutional protocols, or specialist consultation. Every claim must be verified against the cited source documents.
 
@@ -18,8 +18,7 @@ AI-assisted clinical literature synthesis for doctors. Takes any clinical questi
 git clone https://github.com/harjassgambhir/cram.git
 cd cram
 
-# With uv (recommended):
-source .venv/bin/activate
+# With uv (recommended) — creates the venv and installs everything:
 uv sync
 
 # Or with pip:
@@ -229,6 +228,7 @@ OPENROUTER_API_KEY=sk-or-v1-...
 MODEL_BIG=deepseek/deepseek-v4-pro
 MODEL_RESEARCH=deepseek/deepseek-v4-flash
 OPENROUTER_FALLBACK_MODEL=deepseek/deepseek-v4-flash  # fallback on 429
+CRAM_BASE_URL=https://openrouter.ai/api/v1/chat/completions  # any OpenAI-compatible endpoint (e.g. local Ollama)
 
 # Research parameters
 CRAM_BFS_BRANCHES=6      # parallel research branches (default 6)

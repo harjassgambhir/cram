@@ -12,7 +12,9 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 # Validated at startup in run.py — not here, so imports don't fail during testing
 
 MODEL    = os.environ.get("OPENROUTER_MODEL", "deepseek/deepseek-v4-flash")
-BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
+# Configurable so CRAM can point at any OpenAI-compatible chat endpoint
+# (OpenRouter by default; also a local Ollama/LM Studio server, etc.).
+BASE_URL = os.environ.get("CRAM_BASE_URL", "https://openrouter.ai/api/v1/chat/completions")
 
 # ── Model tiers — big model for planning/synthesis, research model for execution ─
 MODEL_TIER_BIG      = os.environ.get("MODEL_BIG",      "deepseek/deepseek-v4-pro")
